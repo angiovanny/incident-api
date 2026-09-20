@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "incident-api"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.141,<0.142",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0,<10",
+    "ruff>=0.12,<1",
+    "mypy>=1.0,<2",
+    "pre-commit>=4.6,<5",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
