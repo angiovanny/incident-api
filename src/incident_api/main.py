@@ -20,12 +20,23 @@ class IncidentType(str, Enum):
     SECURITY = "SECURITY"
 
 
+class IncidentStatus(str, Enum):
+    OPEN = "OPEN"
+    IN_PROGRESS = "IN_PROGRESS"
+    RESOLVED = "RESOLVED"
+    CLOSED = "CLOSED"
+
+
 class IncidentCreate(BaseModel):
     type: IncidentType
     priority: IncidentPriority
     subject: str
     description: str
     user_id: int
+
+
+class Incident(IncidentCreate):
+    status: IncidentStatus
 
 
 @app.get("/")
@@ -39,5 +50,13 @@ def get_incidents() -> list:
 
 
 @app.post("/incidents", status_code=201)
-def create_incident(incident: IncidentCreate) -> IncidentCreate:
-    return incident
+def create_incident(incident: IncidentCreate) -> Incident:
+    incident_return = Incident(
+        type=incident.type,
+        priority=incident.priority,
+        subject=incident.subject,
+        description=incident.description,
+        user_id=incident.user_id,
+        status=IncidentStatus.OPEN,
+    )
+    return incident_return
