@@ -31,7 +31,9 @@ def test_create_incident() -> None:
     response = client.post("/incidents", json=incident_data)
 
     assert response.status_code == 201
-    assert response.json() == incident_data
+    original_data = response.json()
+    assert original_data.pop("status") == "OPEN"
+    assert original_data == incident_data
 
 
 def test_create_incident_rejects_invalid_user_id() -> None:
