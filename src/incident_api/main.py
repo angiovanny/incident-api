@@ -1,4 +1,5 @@
 from enum import Enum
+from uuid import UUID, uuid4
 
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -37,6 +38,7 @@ class IncidentCreate(BaseModel):
 
 class Incident(IncidentCreate):
     status: IncidentStatus
+    id: UUID
 
 
 @app.get("/")
@@ -58,5 +60,6 @@ def create_incident(incident: IncidentCreate) -> Incident:
         description=incident.description,
         user_id=incident.user_id,
         status=IncidentStatus.OPEN,
+        id=uuid4(),
     )
     return incident_return

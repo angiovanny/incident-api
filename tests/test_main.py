@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi.testclient import TestClient
 
 from incident_api.main import app
@@ -32,7 +34,9 @@ def test_create_incident() -> None:
 
     assert response.status_code == 201
     original_data = response.json()
+    incident_id = UUID(original_data.pop("id"))
     assert original_data.pop("status") == "OPEN"
+    assert isinstance(incident_id, UUID)
     assert original_data == incident_data
 
 
