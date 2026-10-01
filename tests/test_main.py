@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from uuid import UUID
 
 from fastapi.testclient import TestClient
@@ -35,8 +36,11 @@ def test_create_incident() -> None:
     assert response.status_code == 201
     original_data = response.json()
     incident_id = UUID(original_data.pop("id"))
+    created_at = datetime.fromisoformat(original_data.pop("created_at"))
     assert original_data.pop("status") == "OPEN"
     assert isinstance(incident_id, UUID)
+    assert created_at.tzinfo is not None
+    assert created_at.utcoffset() == timedelta(0)
     assert original_data == incident_data
 
 
