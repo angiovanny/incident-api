@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from enum import Enum
 from uuid import UUID, uuid4
 
@@ -39,6 +40,7 @@ class IncidentCreate(BaseModel):
 class Incident(IncidentCreate):
     status: IncidentStatus
     id: UUID
+    created_at: datetime
 
 
 @app.get("/")
@@ -61,5 +63,6 @@ def create_incident(incident: IncidentCreate) -> Incident:
         user_id=incident.user_id,
         status=IncidentStatus.OPEN,
         id=uuid4(),
+        created_at=datetime.now(UTC),
     )
     return incident_return
