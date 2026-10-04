@@ -1,11 +1,19 @@
 from datetime import datetime, timedelta
 from uuid import UUID
 
+import pytest
 from fastapi.testclient import TestClient
 
-from incident_api.main import app
+from incident_api.main import Incident, app, incidents
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def clean_incidents():
+    incidents.clear()
+    yield
+    incidents.clear()
 
 
 def test_root_returns_api_status() -> None:
@@ -84,3 +92,20 @@ def test_create_incident_rejects_invalid_type() -> None:
     response = client.post("/incidents", json=incident_data)
 
     assert response.status_code == 422
+
+
+def test_create_and_store_incident_in_memory() -> None:
+    incident_data = {
+        "type": "NETWORK",
+        "priority": "HIGH",
+        "subject": "Internet connection unavailable",
+        "description": "The user cannot access the corporate network",
+        "user_id": 1,
+    }
+
+    response = client.post("/incidents", json=incident_data)
+
+    assert response.status_code == 201
+
+    assert len(incidents) == 1
+    assert isinstance(incidents[0], Incident)

@@ -43,6 +43,9 @@ class Incident(IncidentCreate):
     created_at: datetime
 
 
+incidents: list[Incident] = []
+
+
 @app.get("/")
 def root() -> dict[str, str]:
     return {"message": "Incident API is running"}
@@ -65,4 +68,6 @@ def create_incident(incident: IncidentCreate) -> Incident:
         id=uuid4(),
         created_at=datetime.now(UTC),
     )
+
+    incidents.append(incident_return)
     return incident_return
