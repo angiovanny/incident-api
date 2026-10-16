@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from enum import Enum
 from uuid import UUID, uuid4
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -71,3 +71,15 @@ def create_incident(incident: IncidentCreate) -> Incident:
 
     incidents.append(incident_return)
     return incident_return
+
+
+@app.get("/incidents/{incident_id}")
+def get_incident_by_id(incident_id: UUID) -> Incident:
+    for incident in incidents:
+        if incident.id == incident_id:
+            return incident
+
+    raise HTTPException(
+        status_code=404,
+        detail="Incident not found",
+    )
