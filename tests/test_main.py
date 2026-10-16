@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -126,3 +126,30 @@ def test_get_incidents_returns_created_incident() -> None:
 
     assert response_get.status_code == 200
     assert response_get.json()[0] == response_post.json()
+
+
+def test_get_incident_by_id_returns_created_incident() -> None:
+    incident_data = {
+        "type": "NETWORK",
+        "priority": "HIGH",
+        "subject": "Internet connection unavailable",
+        "description": "The user cannot access the corporate network",
+        "user_id": 1,
+    }
+
+    response_post = client.post("/incidents", json=incident_data)
+    incident_id = response_post.json()["id"]
+
+    response_get = client.get(f"/incidents/{incident_id}")
+
+    assert response_get.status_code == 200
+    assert response_get.json() == response_post.json()
+
+
+def test_get_incident_by_id_returns_404_when_incident_does_not_exist() -> None:
+    fake_id = str(uuid4())
+
+    response_get = client.get(f"/incidents/{fake_id}")
+
+    assert response_get.status_code == 404
+    assert response_get.json() == {"detail": "Incident not found"}
