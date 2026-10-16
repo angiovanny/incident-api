@@ -109,3 +109,20 @@ def test_create_and_store_incident_in_memory() -> None:
 
     assert len(incidents) == 1
     assert isinstance(incidents[0], Incident)
+
+
+def test_get_incidents_returns_created_incident() -> None:
+    incident_data = {
+        "type": "NETWORK",
+        "priority": "HIGH",
+        "subject": "Internet connection unavailable",
+        "description": "The user cannot access the corporate network",
+        "user_id": 1,
+    }
+
+    response_post = client.post("/incidents", json=incident_data)
+
+    response_get = client.get("/incidents")
+
+    assert response_get.status_code == 200
+    assert response_get.json()[0] == response_post.json()
