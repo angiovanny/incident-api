@@ -52,8 +52,8 @@ def root() -> dict[str, str]:
 
 
 @app.get("/incidents")
-def get_incidents() -> list:
-    return []
+def get_incidents() -> list[Incident]:
+    return incidents
 
 
 @app.post("/incidents", status_code=201)
