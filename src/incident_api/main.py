@@ -3,7 +3,7 @@ from enum import Enum
 from uuid import UUID, uuid4
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 app = FastAPI()
 
@@ -43,6 +43,24 @@ class Incident(IncidentCreate):
     created_at: datetime
 
 
+class IncidentUpdate(BaseModel):
+    status: IncidentStatus | None = None
+    description: str | None = None
+
+    @model_validator(mode="after")
+    def validate_update_fields(self) -> "IncidentUpdate":
+        if not self.model_fields_set:
+            raise ValueError("At least one field must be provided")
+
+        if "status" in self.model_fields_set and self.status is None:
+            raise ValueError("status cannot be null")
+
+        if "description" in self.model_fields_set and self.description is None:
+            raise ValueError("description cannot be null")
+
+        return self
+
+
 incidents: list[Incident] = []
 
 
@@ -77,6 +95,27 @@ def create_incident(incident: IncidentCreate) -> Incident:
 def get_incident_by_id(incident_id: UUID) -> Incident:
     for incident in incidents:
         if incident.id == incident_id:
+            return incident
+
+    raise HTTPException(
+        status_code=404,
+        detail="Incident not found",
+    )
+
+
+@app.patch("/incidents/{incident_id}")
+def incident_update(
+    incident_id: UUID,
+    incident_update: IncidentUpdate,
+) -> Incident:
+    for incident in incidents:
+        if incident.id == incident_id:
+            if incident_update.status is not None:
+                incident.status = incident_update.status
+
+            if incident_update.description is not None:
+                incident.description = incident_update.description
+
             return incident
 
     raise HTTPException(
