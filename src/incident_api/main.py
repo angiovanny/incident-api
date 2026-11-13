@@ -122,3 +122,19 @@ def incident_update(
         status_code=404,
         detail="Incident not found",
     )
+
+
+@app.delete("/incidents/{incident_id}", status_code=204)
+def incident_delete(
+    incident_id: UUID,
+) -> None:
+    for incident in incidents:
+        if incident.id == incident_id:
+            incidents.remove(incident)
+
+            return
+
+    raise HTTPException(
+        status_code=404,
+        detail="Incident not found",
+    )

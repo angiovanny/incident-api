@@ -256,3 +256,57 @@ def test_patch_incident_rejects_null_description() -> None:
     response_patch = client.patch(f"/incidents/{incident_id}", json={"description": None})
 
     assert response_patch.status_code == 422
+
+
+def test_delete_existing_incident() -> None:
+    incident_data = {
+        "type": "NETWORK",
+        "priority": "HIGH",
+        "subject": "Internet connection unavailable",
+        "description": "The user cannot access the corporate network",
+        "user_id": 1,
+    }
+
+    response = client.post("/incidents", json=incident_data)
+    incident_id = response.json()["id"]
+
+    response_delete = client.delete(f"/incidents/{incident_id}")
+
+    assert response_delete.status_code == 204
+    assert response_delete.content == b""
+    assert client.get(f"/incidents/{incident_id}").status_code == 404
+
+
+def test_delete_nonexistent_incident_returns_404() -> None:
+    fake_id = str(uuid4())
+
+    response_delete = client.delete(f"/incidents/{fake_id}")
+
+    assert response_delete.status_code == 404
+    assert response_delete.json() == {"detail": "Incident not found"}
+
+
+def test_delete_incident_preserves_other_incidents() -> None:
+    incident_data = {
+        "type": "NETWORK",
+        "priority": "HIGH",
+        "subject": "Internet connection unavailable",
+        "description": "The user cannot access the corporate network",
+        "user_id": 1,
+    }
+
+    response1 = client.post("/incidents", json=incident_data)
+    incident1_id = response1.json()["id"]
+    response2 = client.post("/incidents", json=incident_data)
+    incident2_id = response2.json()["id"]
+    response3 = client.post("/incidents", json=incident_data)
+    incident3_id = response3.json()["id"]
+
+    response_delete = client.delete(f"/incidents/{incident2_id}")
+
+    assert response_delete.status_code == 204
+    response_get = client.get("/incidents")
+    assert len(response_get.json()) == 2
+    remaining_ids = {incident["id"] for incident in response_get.json()}
+
+    assert remaining_ids == {incident1_id, incident3_id}
